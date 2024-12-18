@@ -50,5 +50,6 @@ namespace StockServiceAPI.Data
             modelBuilder.Entity<Transactions>()
                 .HasKey(t => t.Id);
         }
+
     }
 }

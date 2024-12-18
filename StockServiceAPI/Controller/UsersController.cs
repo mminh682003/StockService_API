@@ -6,7 +6,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StockServiceAPI.Data;
+using StockServiceAPI.DTOs;
 using StockServiceAPI.Models;
+using StockServiceAPI.Services;
+using System.Text.RegularExpressions;
 
 namespace StockServiceAPI.Controller
 {
@@ -15,10 +18,12 @@ namespace StockServiceAPI.Controller
     public class UsersController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IUserService userService;
 
-        public UsersController(AppDbContext context)
+        public UsersController(AppDbContext context, IUserService userService)
         {
             _context = context;
+            this.userService = userService;
         }
 
         // GET: api/Users
@@ -43,7 +48,6 @@ namespace StockServiceAPI.Controller
         }
 
         // PUT: api/Users/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUsers(int id, Users users)
         {
@@ -73,8 +77,43 @@ namespace StockServiceAPI.Controller
             return NoContent();
         }
 
+        // POST: api/Users/add
+        [HttpPost]
+        public async Task<ActionResult<Users>> AddUser([FromBody] CreateUserDTO newUser)
+        {
+            // Validate dữ liệu
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState); // Trả về tất cả lỗi validation nếu có
+
+            // Kiểm tra xem ID đã tồn tại chưa
+            if (userService.UserExists(newUser.Username))
+            {
+                return Conflict(new { message = "Tên đã tồn tại trong hệ thống." });
+            }
+            // Kiểm tra xem Email đã tồn tại chưa
+            if (_context.Users.Any(u => u.Email == newUser.Email))
+            {
+                return Conflict(new { message = "Email đã tồn tại trong hệ thống." });
+            }
+            // Tạo mới đối tượng User từ DTO
+            var user = new Users
+            {
+                Id = newUser.Id,
+                Username = newUser.Username,
+                Password = newUser.Password,
+                Email = newUser.Email,
+                Fullname = newUser.Fullname,
+                DateCreated = DateTime.Now
+            };
+
+            // Thêm mới User vào database
+            userService.AddUser(user);
+
+            return Ok( new { message = "Thêm mới User thành công!", data = user });
+        }
+
+
         // POST: api/Users
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Users>> PostUsers(Users users)
         {
@@ -85,19 +124,23 @@ namespace StockServiceAPI.Controller
         }
 
         // DELETE: api/Users/5
-        [HttpDelete("{id}")]
+        [HttpDelete]
         public async Task<IActionResult> DeleteUsers(int id)
         {
-            var users = await _context.Users.FindAsync(id);
-            if (users == null)
+            // Kiểm tra xem người dùng có tồn tại hay không
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
             {
-                return NotFound();
+                // Nếu không tìm thấy người dùng, trả về NotFound
+                return NotFound(new { message = "User không tồn tại." });
             }
 
-            _context.Users.Remove(users);
+            // Nếu người dùng tồn tại, xóa người dùng
+            _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            // Trả về thông báo thành công
+            return Ok(new { message = "Xóa user thành công!" });
         }
 
         private bool UsersExists(int id)
