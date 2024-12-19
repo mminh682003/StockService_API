@@ -18,7 +18,7 @@ using System.Security.Claims;
 
 namespace StockServiceAPI.Controller
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/[Controller]")]
     [ApiController]
     public class UsersController : ControllerBase
     {
@@ -35,7 +35,7 @@ namespace StockServiceAPI.Controller
         }
 
         // GET: api/Users
-        [HttpGet]
+        [HttpGet("list-users")]
         public async Task<ActionResult<IEnumerable<Users>>> GetUsers()
         {
             return await _context.Users.ToListAsync();
@@ -52,8 +52,8 @@ namespace StockServiceAPI.Controller
 
 
         // GET: api/Users/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Users>> GetUsers(int id)
+        [HttpGet("user")]
+        public async Task<ActionResult<Users>> GetUsers([FromQuery]int id)
         {
             var users = await _context.Users.FindAsync(id);
 
@@ -66,8 +66,8 @@ namespace StockServiceAPI.Controller
         }
 
         // PUT: api/Users/5
-        [HttpPut("{id}/update_profile")]
-        public async Task<IActionResult> UpdateProfile(int id, [FromBody] UpdateProfileRequestDTO updateProfileRequestDTO)
+        [HttpPut("update_profile")]
+        public async Task<IActionResult> UpdateProfile([FromQuery] int id, [FromBody] UpdateProfileRequestDTO updateProfileRequestDTO)
         {
             // Kiểm tra ID có hợp lệ không
             if (id <= 0)
@@ -105,8 +105,8 @@ namespace StockServiceAPI.Controller
             }
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> ResetPassword(int id, [FromBody] ResetPassworDTO resetPassworDTO)
+        [HttpPut("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromQuery] int id, [FromBody] ResetPassworDTO resetPassworDTO)
         {
             if (id <= 0)
             {
@@ -143,7 +143,7 @@ namespace StockServiceAPI.Controller
 
  //Tạo user
  // POST: api/Users/add
- [HttpPost]
+ [HttpPost("add-users")]
         public async Task<ActionResult<Users>> AddUser([FromBody] CreateUserDTO newUser)
         {
             // Validate dữ liệu
@@ -184,7 +184,7 @@ namespace StockServiceAPI.Controller
         }
 
         //Đăng nhập
-        [HttpPost]
+        [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginRequestDTO)
         {
             var user = await userService.AuthenticateAsync(loginRequestDTO.UserName, loginRequestDTO.PassWord);
@@ -221,8 +221,8 @@ namespace StockServiceAPI.Controller
 
 
         // DELETE: api/Users/5
-        [HttpDelete]
-        public async Task<IActionResult> DeleteUsers(int id)
+        [HttpDelete("delete-users")]
+        public async Task<IActionResult> DeleteUsers([FromQuery] int id)
         {
             // Kiểm tra xem người dùng có tồn tại hay không
             var user = await _context.Users.FindAsync(id);
