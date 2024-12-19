@@ -10,6 +10,10 @@ namespace StockServiceAPI.Models
         public string Fullname { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime? LastLogin { get; set; }
+        public bool IsActive { get; set; } = true; // Giá trị mặc định: true
+        public string Role { get; set; } = "User"; // Giá trị mặc định: "User"
+
+
 
         // Navigation properties
         public ICollection<Portfolios> Portfolio { get; set; } =new List<Portfolios>();

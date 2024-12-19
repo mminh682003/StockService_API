@@ -43,6 +43,26 @@
   },
   {
     "ContainingType": "StockServiceAPI.Controller.UsersController",
+    "Method": "GetbyName",
+    "RelativePath": "api/Users/GetbyName",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[StockServiceAPI.Models.Users, StockServiceAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "StockServiceAPI.Controller.UsersController",
     "Method": "GetUsers",
     "RelativePath": "api/Users/GetUsers",
     "HttpMethod": "GET",
@@ -89,29 +109,19 @@
   },
   {
     "ContainingType": "StockServiceAPI.Controller.UsersController",
-    "Method": "PostUsers",
-    "RelativePath": "api/Users/PostUsers",
+    "Method": "Login",
+    "RelativePath": "api/Users/Login",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "users",
-        "Type": "StockServiceAPI.Models.Users",
+        "Name": "loginRequestDTO",
+        "Type": "StockServiceAPI.DTOs.LoginRequestDTO",
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "StockServiceAPI.Models.Users",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "StockServiceAPI.Controller.UsersController",

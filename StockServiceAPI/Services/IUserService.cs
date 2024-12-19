@@ -5,10 +5,12 @@ namespace StockServiceAPI.Services
 {
     public interface IUserService
     {
-        bool UserExists(string name);
-        void AddUser(Users user);
-        // Hàm kiểm tra định dạng email
+        bool UserExists(string name);         //Kiểm tra tên đã tồn tại trong hệ thống chưa
+        bool UserCheck(int id);  // Hàm kiểm tra định dạng emails
 
-        bool UserCheck(int id);
+        
+        Task<Users> AuthenticateAsync(string UserName, string PassWord);  
+
+        void AddUser(Users user);    //Thêm mới tài khoản
     }
 }
