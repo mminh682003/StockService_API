@@ -34,6 +34,12 @@ namespace StockServiceAPI.Services
         {
             return _context.Users.Any(m=>m.Id == id); // Kiểm tra xem có tồn tại ID trong db không
         }
+        public bool UserCheckPassword(Users user, string password)
+        {
+            if (user == null || string.IsNullOrEmpty(user.Password)) return false;
+            // So sánh mật khẩu nhập vào với passhash trong cơ sở dữ liệu
+            return BCrypt.Net.BCrypt.Verify(password, user.Password);
+        }
 
         public async Task<Users> AuthenticateAsync(string UserName, string PassWord)
         {
@@ -47,5 +53,29 @@ namespace StockServiceAPI.Services
             }
             return user;
         }
+
+        public async Task<bool> ResetPassword(Users user, string newPassword)
+        {
+            // Mã hóa mật khẩu mới
+            var hashedNewPassword = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+            // Gán mật khẩu đã mã hóa vào đối tượng user
+            user.Password = hashedNewPassword;
+
+            try
+            {
+                // Cập nhật thông tin người dùng
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+                return true; // Thay đổi mật khẩu thành công
+            }
+            catch (Exception ex)
+            {
+                // Ghi log lỗi để hỗ trợ debug (nếu cần)
+                Console.WriteLine($"lỗi khi đang resetpassword: {ex.Message}");
+                return false; // Thay đổi mật khẩu thất bại
+            }
+        }
+
     }
 }

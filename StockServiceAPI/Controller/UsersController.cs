@@ -31,7 +31,7 @@ namespace StockServiceAPI.Controller
             _context = context;
             this.userService = userService;
             this.configuration = configuration;
-                
+
         }
 
         // GET: api/Users
@@ -41,7 +41,7 @@ namespace StockServiceAPI.Controller
             return await _context.Users.ToListAsync();
         }
 
-   //GET: api/users/timkiem?=name
+        //GET: api/users/timkiem?=name
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Users>>> GetbyName()
         {
@@ -66,37 +66,84 @@ namespace StockServiceAPI.Controller
         }
 
         // PUT: api/Users/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUsers(int id, Users users)
+        [HttpPut("{id}/update_profile")]
+        public async Task<IActionResult> UpdateProfile(int id, [FromBody] UpdateProfileRequestDTO updateProfileRequestDTO)
         {
-            if (id != users.Id)
+            // Kiểm tra ID có hợp lệ không
+            if (id <= 0)
             {
-                return BadRequest();
+                return BadRequest(new { message = "ID không hợp lệ." });
             }
 
-            _context.Entry(users).State = EntityState.Modified;
+            // Kiểm tra xem User có tồn tại không
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound(new { message = "Không tìm thấy User." });
+            }
+
+            // Kiểm tra Email trùng lặp
+            if (_context.Users.Any(u => u.Email == updateProfileRequestDTO.Email && u.Id != id))
+            {
+                return Conflict(new { message = "Email đã tồn tại." });
+            }
+
+            // Cập nhật thông tin
+            user.Fullname = updateProfileRequestDTO.FullName ?? user.Fullname;
+            user.Email = updateProfileRequestDTO.Email ?? user.Email;
 
             try
             {
+                _context.Entry(user).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
+                return Ok(new { message = "Cập nhật thông tin thành công." });
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
-                if (!UsersExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                // Log lỗi để debug (nếu cần)
+                return StatusCode(500, new { message = "Lỗi khi cập nhật thông tin, vui lòng thử lại.", error = ex.Message });
             }
-
-            return NoContent();
         }
-        //Tạo user
-        // POST: api/Users/add
-        [HttpPost]
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> ResetPassword(int id, [FromBody] ResetPassworDTO resetPassworDTO)
+        {
+            if (id <= 0)
+            {
+                return BadRequest(new { message = "ID không hợp lệ." });
+            }
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound(new { message = "Không tìm thấy User." });
+            }
+            //Check dữ liệu từ Client
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            //Check user có tồn tại hay không
+            if (!userService.UserCheckPassword(user, resetPassworDTO.CurrentPassword))
+            {
+                return Conflict(new { message = "Sai mật khẩu cũ. Vui lòng nhập lại" });
+            }
+            if (resetPassworDTO.CurrentPassword == resetPassworDTO.NewPassword)
+            {
+                return BadRequest("Mật khẩu mới và mật khẩu cũ không được giống nhau");
+            }
+            var result = await userService.ResetPassword(user, resetPassworDTO.NewPassword);
+            if (!result)
+            {
+                return StatusCode(500, "Thay đổi mật khẩu thất bại");
+            }
+            return  Ok(new { message = "Cập nhật mật khẩu thành công" });
+        }
+
+
+
+ //Tạo user
+ // POST: api/Users/add
+ [HttpPost]
         public async Task<ActionResult<Users>> AddUser([FromBody] CreateUserDTO newUser)
         {
             // Validate dữ liệu
@@ -145,7 +192,11 @@ namespace StockServiceAPI.Controller
             {
                 return Unauthorized(new {message="Sai tài khoản hoặc mật khẩu!"});
             }
-            //Tạo JWT token
+            if (user.IsActive == false || user.IsActive == null)
+            {
+                return Unauthorized(new {message="Người dùng không được phép truy cập hệ thống"});
+            }
+           //Tạo JWT token
             var tokenHandler =  new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]);
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -189,9 +240,5 @@ namespace StockServiceAPI.Controller
             return Ok(new { message = "Xóa user thành công!" });
         }
 
-        private bool UsersExists(int id)
-        {
-            return _context.Users.Any(e => e.Id == id);
-        }
     }
 }

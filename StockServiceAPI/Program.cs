@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IUserService, UserService>();
 //Cấu hình Authentication và JWT Token
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    .AddJwtBearer(options => 
     {
         //Validate cho param
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
@@ -23,7 +23,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             // Thiết lập SigningKey để xác thực token
-            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
+            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey
+            (System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
 
         };
     });
@@ -35,9 +36,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddControllers();
 // Configure the HTTP request pipeline.
 var app = builder.Build();
-// Cấu hình middleware cho Authentication và Authorization
-app.UseAuthentication();
-app.UseAuthorization();
+
+app.UseAuthentication();// Cấu hình middleware cho Authentication
+app.UseAuthorization(); // Cấu hình middleware cho Authorization
 app.UseHttpsRedirection();
 app.UseRouting();
 app.MapControllers();

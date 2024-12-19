@@ -125,8 +125,8 @@
   },
   {
     "ContainingType": "StockServiceAPI.Controller.UsersController",
-    "Method": "PutUsers",
-    "RelativePath": "api/Users/PutUsers/{id}",
+    "Method": "ResetPassword",
+    "RelativePath": "api/Users/ResetPassword/{id}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -137,8 +137,29 @@
         "IsRequired": true
       },
       {
-        "Name": "users",
-        "Type": "StockServiceAPI.Models.Users",
+        "Name": "resetPassworDTO",
+        "Type": "StockServiceAPI.DTOs.ResetPassworDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StockServiceAPI.Controller.UsersController",
+    "Method": "UpdateProfile",
+    "RelativePath": "api/Users/UpdateProfile/{id}/update_profile",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "updateProfileRequestDTO",
+        "Type": "StockServiceAPI.DTOs.UpdateProfileRequestDTO",
         "IsRequired": true
       }
     ],
